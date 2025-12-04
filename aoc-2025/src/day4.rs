@@ -129,6 +129,42 @@ pub fn part2(input: &str) -> i32 {
     num_removed
 }
 
+mod parse {
+    use winnow::Parser;
+    use winnow::Result;
+    use winnow::ascii::line_ending;
+    use winnow::combinator::alt;
+    use winnow::combinator::delimited;
+    use winnow::combinator::repeat;
+    use winnow::combinator::separated;
+    use winnow::combinator::seq;
+    use winnow::prelude::*;
+
+    fn line_parser(input: &mut &str) -> Result<Vec<bool>> {
+        repeat(1.., alt(('@'.value(true), '.'.value(false)))).parse_next(input)
+    }
+
+    fn input_parser(input: &mut &str) -> Result<Vec<Vec<bool>>> {
+        separated(1.., line_parser, line_ending).parse_next(input)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        fn test_parse() {
+            let input = "@.
+.@
+
+";
+            let parsed = input_parser.parse(input).unwrap();
+            assert_eq!(parsed, vec![vec![true, false], vec![false, true]]);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
