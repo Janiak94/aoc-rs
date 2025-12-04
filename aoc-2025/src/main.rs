@@ -4,6 +4,7 @@ fn run_days() {
     aoc!(day1, part1, part2);
     aoc!(day2, part1, part2);
     aoc!(day3, part1, part2);
+    aoc!(day4, part1, part2);
 }
 
 fn main() {
