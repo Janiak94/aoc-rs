@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 itertools = "0.14.0"
-winnow = "0.7.14"
+winnow = { version = "0.7.14" }
 
 [dev-dependencies]
 rstest = "0.26.1"
