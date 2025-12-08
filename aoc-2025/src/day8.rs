@@ -1,5 +1,3 @@
-use std::{collections::HashSet, hash::Hash};
-
 use itertools::Itertools;
 
 #[cfg(test)]
@@ -15,43 +13,28 @@ struct Junction(u32, u32, u32);
 struct Edge<'j>(&'j Junction, &'j Junction);
 
 impl Junction {
-    fn distance(&self, other: &Self) -> f32 {
-        f32::sqrt(
-            ((self.0 as i64 - other.0 as i64).pow(2)
-                + (self.1 as i64 - other.1 as i64).pow(2)
-                + (self.2 as i64 - other.2 as i64).pow(2)) as f32,
-        )
-    }
-}
-
-impl Hash for Junction {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.0.hash(state);
-        self.1.hash(state);
-        self.2.hash(state);
-    }
-}
-
-impl PartialEq for Edge<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        !(self.0 != other.1 || self.1 != other.1 && self.1 != other.0)
+    fn distance(&self, other: &Self) -> u64 {
+        (self.0 as u64).abs_diff(other.0 as u64).pow(2)
+            + (self.1 as u64).abs_diff(other.1 as u64).pow(2)
+            + (self.2 as u64).abs_diff(other.2 as u64).pow(2)
     }
 }
 
 impl Edge<'_> {
-    fn distance(&self) -> f32 {
+    fn distance(&self) -> u64 {
         self.0.distance(self.1)
     }
 }
 
+type Circuit = Vec<Junction>;
+
 struct Circuits {
-    circuits: Vec<HashSet<Junction>>,
+    circuits: Vec<Circuit>,
 }
 
 impl Circuits {
     fn new(junctions: &[Junction]) -> Self {
-        let circuits: Vec<HashSet<Junction>> =
-            junctions.iter().map(|j| HashSet::from([*j])).collect();
+        let circuits = junctions.iter().map(|j| vec![*j]).collect();
         Self { circuits }
     }
 
@@ -61,16 +44,14 @@ impl Circuits {
             circuits.partition(|c| c.contains(edge.0) || c.contains(edge.1));
         assert!(to_merge.len() <= 2);
 
-        let merged = to_merge
-            .into_iter()
-            .fold(HashSet::<Junction>::new(), |mut acc, c| {
-                acc.extend(c);
-                acc
-            });
-        self.circuits = rest.into_iter().chain(std::iter::once(merged)).collect();
+        let merged = to_merge.into_iter().reduce(|mut acc, c| {
+            acc.extend(c);
+            acc
+        });
+        self.circuits.extend(rest.into_iter().chain(merged));
     }
 
-    fn iter(&self) -> impl Iterator<Item = &HashSet<Junction>> {
+    fn iter(&self) -> impl Iterator<Item = &Vec<Junction>> {
         self.circuits.iter()
     }
 
