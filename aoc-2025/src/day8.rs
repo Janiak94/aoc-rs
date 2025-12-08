@@ -1,5 +1,7 @@
 use itertools::Itertools;
 
+type Input = (u32, u32);
+
 #[cfg(test)]
 const LIMIT: usize = 10;
 
@@ -13,6 +15,7 @@ struct Junction(u32, u32, u32);
 struct Edge<'j>(&'j Junction, &'j Junction);
 
 impl Junction {
+    #[inline]
     fn distance(&self, other: &Self) -> u64 {
         (self.0 as u64).abs_diff(other.0 as u64).pow(2)
             + (self.1 as u64).abs_diff(other.1 as u64).pow(2)
@@ -21,6 +24,7 @@ impl Junction {
 }
 
 impl Edge<'_> {
+    #[inline]
     fn distance(&self) -> u64 {
         self.0.distance(self.1)
     }
@@ -55,6 +59,7 @@ impl Circuits {
         self.circuits.iter()
     }
 
+    #[inline]
     fn len(&self) -> usize {
         self.circuits.len()
     }
@@ -75,7 +80,7 @@ fn edges_sorted(junctions: &[Junction]) -> impl Iterator<Item = Edge<'_>> {
         .sorted_unstable_by(|e1, e2| e1.distance().partial_cmp(&e2.distance()).unwrap())
 }
 
-fn process(input: &str) -> (u32, u32) {
+pub fn process(input: &str) -> Input {
     let junctions = parse::parse_input(input);
 
     let sorted = edges_sorted(&junctions);
@@ -103,12 +108,12 @@ fn process(input: &str) -> (u32, u32) {
     unreachable!()
 }
 
-pub fn part1(input: &str) -> u32 {
-    process(input).0
+pub fn part1(input: &Input) -> u32 {
+    input.0
 }
 
-pub fn part2(input: &str) -> u32 {
-    process(input).1
+pub fn part2(input: &Input) -> u32 {
+    input.1
 }
 
 #[cfg(test)]
@@ -145,14 +150,14 @@ mod tests {
 
     #[rstest]
     fn test_part1() {
-        let actual = part1(SAMPLE_INPUT);
+        let actual = part1(&process(SAMPLE_INPUT));
         let expected = 40;
         assert_eq!(expected, actual);
     }
 
     #[rstest]
     fn test_part2() {
-        let actual = part2(SAMPLE_INPUT);
+        let actual = part2(&process(SAMPLE_INPUT));
         let expected = 25272;
         assert_eq!(expected, actual);
     }
