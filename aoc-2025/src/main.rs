@@ -8,6 +8,7 @@ fn run_days() {
     aoc!(day5, part1, part2);
     aoc!(day6, part1, part2);
     aoc!(day7, part1, part2);
+    aoc!(day8, part1, part2);
 }
 
 fn main() {
