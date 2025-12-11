@@ -10,6 +10,7 @@ fn run_days() {
     aoc!(day7 => part1, part2);
     aoc!(day8 => process => part1, part2);
     aoc!(day9 => process => part1, part2);
+    aoc!(day10 => process => part1, part2);
 }
 
 fn main() {
