@@ -1,21 +1,40 @@
-use std::collections::HashMap;
+pub type Input = Graph;
 
-type Input = Graph;
-
-struct NodeIndexer<'i> {
-    mapping: HashMap<&'i str, usize>,
+#[derive(Debug)]
+struct NodeIndexer {
+    mapping: Vec<Option<usize>>,
+    size: usize,
 }
 
-impl<'i> NodeIndexer<'i> {
+#[inline]
+fn node_to_index(node: &str) -> usize {
+    node.bytes()
+        .take(3)
+        .fold(0, |acc, b| 26 * acc + usize::from(b - b'a'))
+}
+
+impl NodeIndexer {
     fn new() -> Self {
-        Self {
-            mapping: HashMap::new(),
-        }
+        let mapping = vec![None; 26usize.pow(3)];
+        Self { mapping, size: 0 }
     }
 
-    fn index_of(&mut self, node: &'i str) -> usize {
-        let size = self.mapping.len();
-        *self.mapping.entry(node).or_insert(size)
+    #[inline]
+    fn get_or_create_index(&mut self, node: &str) -> usize {
+        let idx = node_to_index(node);
+        if let Some(mapped) = self.mapping[idx] {
+            return mapped;
+        }
+        let prev_size = self.size;
+        self.size += 1;
+        self.mapping[idx] = Some(prev_size);
+        prev_size
+    }
+
+    #[inline]
+    fn index_of(&self, node: &str) -> Option<usize> {
+        let idx = node_to_index(node);
+        self.mapping[idx]
     }
 }
 
@@ -24,66 +43,27 @@ type Mapping = Vec<Vec<usize>>;
 #[derive(Debug)]
 pub struct Graph {
     mapping: Mapping,
-    start: usize,
-    end: usize,
-
-    dac: usize,
-    fft: usize,
-    svr: usize,
+    indexer: NodeIndexer,
 }
 
-pub fn process(input: &str) -> Graph {
+pub fn process(input: &'_ str) -> Input {
     let lines: Vec<_> = input.lines().filter(|line| !line.is_empty()).collect();
 
-    let mut start = None;
-    let mut end = None;
-    let mut dac = None;
-    let mut fft = None;
-    let mut svr = None;
     let mut mapping = vec![vec![]; lines.len() + 1];
     let mut indexer = NodeIndexer::new();
     for line in lines {
-        let (from_str, to_str) = line.split_once(": ").expect("");
+        let mut nodes = line.split_ascii_whitespace();
 
-        let from = indexer.index_of(from_str);
+        let from = nodes.next().expect("no start node");
+        let from = indexer.get_or_create_index(from);
 
-        match from_str {
-            "you" => start = Some(from),
-            "fft" => fft = Some(from),
-            "dac" => dac = Some(from),
-            "svr" => svr = Some(from),
-            _ => {}
-        }
-
-        let to: Vec<_> = to_str
-            .split(" ")
-            .map(|node_str| {
-                let node = indexer.index_of(node_str);
-                if node_str == "out" {
-                    end = Some(node);
-                }
-                node
-            })
+        let to: Vec<_> = nodes
+            .map(|node_str| indexer.get_or_create_index(node_str))
             .collect();
         mapping[from] = to;
     }
 
-    Graph {
-        mapping,
-        start: start.expect("start not found"),
-        end: end.expect("end not found"),
-        dac: dac.expect("dac not found"),
-        fft: fft.expect("fft not found"),
-        svr: svr.expect("svr not found"),
-    }
-}
-
-fn walk(start: usize, graph: &Graph) -> u64 {
-    if start == graph.end {
-        return 1;
-    }
-    let to = &graph.mapping[start];
-    to.iter().map(|t| walk(*t, graph)).sum::<u64>()
+    Graph { mapping, indexer }
 }
 
 fn dfs(start: usize, end: usize, mapping: &Mapping, cache: &mut [Option<u64>]) -> u64 {
@@ -104,23 +84,28 @@ fn dfs(start: usize, end: usize, mapping: &Mapping, cache: &mut [Option<u64>]) -
     sum
 }
 
-fn find_path(from: usize, to: usize, mapping: &Mapping) -> u64 {
-    let mut cache = vec![None; mapping.len()];
-    dfs(from, to, mapping, &mut cache)
+fn find_path(from: &str, to: &str, graph: &Graph) -> u64 {
+    let indexer = &graph.indexer;
+    let mut cache = vec![None; graph.mapping.len()];
+    dfs(
+        indexer.index_of(from).expect("from not found"),
+        indexer.index_of(to).expect("to not found"),
+        &graph.mapping,
+        &mut cache,
+    )
 }
 
 pub fn part1(input: &Input) -> u64 {
-    let start = input.start;
-    walk(start, input)
+    find_path("you", "out", input)
 }
 
 pub fn part2(input: &Input) -> u64 {
-    let svr_fft = find_path(input.svr, input.fft, &input.mapping);
-    let svr_dac = find_path(input.svr, input.dac, &input.mapping);
-    let dac_fft = find_path(input.dac, input.fft, &input.mapping);
-    let fft_dac = find_path(input.fft, input.dac, &input.mapping);
-    let dac_out = find_path(input.dac, input.end, &input.mapping);
-    let fft_out = find_path(input.fft, input.end, &input.mapping);
+    let svr_fft = find_path("svr", "fft", input);
+    let svr_dac = find_path("svr", "dac", input);
+    let dac_fft = find_path("dac", "fft", input);
+    let fft_dac = find_path("fft", "dac", input);
+    let dac_out = find_path("dac", "out", input);
+    let fft_out = find_path("fft", "out", input);
 
     svr_fft * fft_dac * dac_out + svr_dac * dac_fft * fft_out
 }
