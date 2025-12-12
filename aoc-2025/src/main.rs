@@ -1,15 +1,15 @@
 use aoc_2025::*;
 
 fn run_days() {
-    aoc!(day1 => part1, part2);
-    aoc!(day2 => part1, part2);
-    aoc!(day3 => part1, part2);
-    aoc!(day4 => process => part1, part2);
-    aoc!(day5 => part1, part2);
-    aoc!(day6 => part1, part2);
-    aoc!(day7 => part1, part2);
-    aoc!(day8 => process => part1, part2);
-    aoc!(day9 => process => part1, part2);
+    aoc!(day01 => part1, part2);
+    aoc!(day02 => part1, part2);
+    aoc!(day03 => part1, part2);
+    aoc!(day04 => process => part1, part2);
+    aoc!(day05 => part1, part2);
+    aoc!(day06 => part1, part2);
+    aoc!(day07 => part1, part2);
+    aoc!(day08 => process => part1, part2);
+    aoc!(day09 => process => part1, part2);
     aoc!(day10 => process => part1, part2);
     aoc!(day11 => process => part1, part2);
     aoc!(day12 => process => part1);

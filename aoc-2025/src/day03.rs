@@ -22,7 +22,7 @@ impl<C> BankBuilder<C> {
     }
 }
 
-impl<'a> BankBuilder<usize> {
+impl BankBuilder<usize> {
     fn build_from_str(&self, bank: &str) -> BatteryBank {
         let bank = bank
             .chars()
@@ -69,12 +69,10 @@ fn select_batteries(bank: BatteryBank) -> BatteryBank {
         let idx = options.rev().max_by_key(|&i| bank.bank[i]).unwrap();
         active.push_back(idx);
     }
-    let new_bank = BatteryBank {
+    BatteryBank {
         bank: bank.bank,
         active,
-    };
-
-    new_bank
+    }
 }
 
 pub fn part1(input: &str) -> u128 {

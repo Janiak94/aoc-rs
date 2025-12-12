@@ -172,7 +172,7 @@ mod parse {
         token::rest,
     };
 
-    use crate::day8::Junction;
+    use crate::day08::Junction;
 
     fn junction(input: &mut &str) -> ModalResult<Junction> {
         let numbers: Vec<_> = separated(3, digit1.parse_to::<u32>(), ',').parse_next(input)?;

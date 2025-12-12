@@ -1,15 +1,15 @@
 use std::{collections::HashSet, ops::RangeInclusive};
 
 use winnow::{
+    Parser, Result,
     ascii::digit1,
     combinator::{separated, separated_pair},
-    Parser, Result,
 };
 
 type Id = u64;
 type IdRange = RangeInclusive<Id>;
 
-fn input_parser<'a>(input: &mut &'a str) -> Result<Vec<IdRange>> {
+fn input_parser(input: &mut &str) -> Result<Vec<IdRange>> {
     separated(
         1..,
         separated_pair(digit1, '-', digit1)

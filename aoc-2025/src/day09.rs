@@ -73,9 +73,9 @@ pub fn part2(input: &Input) -> u64 {
         let (x1, y1) = *compressed[i].compressed();
         let (x2, y2) = *compressed[(i + 1) % num_corners].compressed();
 
-        for x in x1.min(x2)..=x1.max(x2) {
-            for y in y1.min(y2)..=y1.max(y2) {
-                grid[x][y] = INSIDE;
+        for row in grid[x1.min(x2)..=x1.max(x2)].iter_mut() {
+            for cell in row[y1.min(y2)..=y1.max(y2)].iter_mut() {
+                *cell = INSIDE;
             }
         }
     }
@@ -193,7 +193,7 @@ mod parse {
         combinator::{separated, separated_pair, terminated},
     };
 
-    use crate::day9::Tile;
+    use crate::day09::Tile;
 
     #[inline]
     fn corner(input: &mut &str) -> Result<Tile> {

@@ -110,7 +110,7 @@ mod tests {
 
     #[rstest]
     fn test_part1() {
-        let input = vec![
+        let input = [
             "L68", "L30", "R48", "L5", "R60", "L55", "L1", "L99", "R14", "L82",
         ]
         .join("\n");
@@ -120,7 +120,7 @@ mod tests {
 
     #[rstest]
     fn test_part2() {
-        let input = vec![
+        let input = [
             "L68", "L30", "R48", "L5", "R60", "L55", "L1", "L99", "R14", "L82",
         ]
         .join("\n");
