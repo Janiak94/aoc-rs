@@ -29,14 +29,14 @@ macro_rules! aoc {
 
         $(
             let start = std::time::Instant::now();
-            let input = aoc_2025::$day::$process(input);
+            let input = $day::$process(input);
             let elapsed = start.elapsed();
             println!("  {:<15} {:<20}elapsed: {:.3?}", "preprocessing", "", elapsed);
         )?
 
         $(
             let start = std::time::Instant::now();
-            let result = aoc_2025::$day::$part(&input);
+            let result = $day::$part(&input);
             let elapsed = start.elapsed();
 
             println!("  {:<15} {:<20}elapsed: {:.3?}", stringify!($part), result, elapsed);
