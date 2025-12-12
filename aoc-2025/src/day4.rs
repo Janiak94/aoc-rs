@@ -1,18 +1,18 @@
-type Input = (u64, u64);
+type Input = (Vec<Position>, Grid<u8>);
 
 const SURROUNDING: [Position; 8] = [
-    Position(1, 0),
-    Position(1, 1),
-    Position(0, 1),
     Position(-1, 1),
+    Position(0, 1),
+    Position(1, 1),
     Position(-1, 0),
+    Position(1, 0),
     Position(-1, -1),
     Position(0, -1),
     Position(1, -1),
 ];
 
 #[derive(Copy, Clone, Debug)]
-struct Position(isize, isize);
+pub struct Position(isize, isize);
 
 impl std::ops::Add for Position {
     type Output = Self;
@@ -22,7 +22,8 @@ impl std::ops::Add for Position {
     }
 }
 
-struct Grid<T> {
+#[derive(Clone)]
+pub struct Grid<T> {
     items: Vec<T>,
     width: usize,
     height: usize,
@@ -48,17 +49,6 @@ impl<T> std::ops::IndexMut<Position> for Grid<T> {
     }
 }
 
-fn check_blocked(pos: Position, grid: &Grid<u8>) -> bool {
-    if grid[pos] == b'.' {
-        return false;
-    }
-    SURROUNDING
-        .iter()
-        .filter(|&offset| grid.contains(*offset + pos) && grid[*offset + pos] == b'@')
-        .count()
-        >= 4
-}
-
 pub fn process(input: &str) -> Input {
     let mut lines = input.lines();
     let first_line = lines.next().expect("No first line");
@@ -72,60 +62,60 @@ pub fn process(input: &str) -> Input {
 
     let width = first_line.len();
     let height = items.len() / width;
-    let mut grid = Grid {
+    let in_grid = Grid {
         items,
         width,
         height,
     };
+    let mut grid = Grid {
+        items: vec![u8::MAX; width * height],
+        width,
+        height,
+    };
 
-    let mut occupied: Vec<_> = grid
-        .items
-        .iter()
-        .enumerate()
-        .filter_map(|(i, item)| {
-            if *item == b'@' {
-                Some(index_to_position(i, width))
-            } else {
-                None
+    let mut to_remove = Vec::with_capacity(width * height);
+    for i in 0..width as isize {
+        for j in 0..height as isize {
+            let pos = Position(i, j);
+
+            if in_grid[pos] == b'@' {
+                let n_count = SURROUNDING
+                    .iter()
+                    .map(|&p| p + pos)
+                    .filter(|&n| in_grid.contains(n) && in_grid[n] == b'@')
+                    .count() as u8;
+                if n_count < 4 {
+                    to_remove.push(pos);
+                }
+                grid[pos] = n_count;
             }
-        })
-        .collect();
-
-    let mut part_1 = 0;
-    let mut removed = 0;
-    for i in 0.. {
-        let (blocked, unblocked): (Vec<_>, Vec<_>) = occupied
-            .into_iter()
-            .partition(|&pos| check_blocked(pos, &grid));
-
-        removed += unblocked.len() as u64;
-        if i == 0 {
-            part_1 = removed;
         }
-
-        if unblocked.is_empty() {
-            break;
-        }
-
-        for pos in unblocked {
-            grid[pos] = b'.';
-        }
-
-        occupied = blocked;
     }
-    (part_1, removed)
-}
-
-fn index_to_position(index: usize, width: usize) -> Position {
-    Position((index / width) as isize, (index % width) as isize)
+    (to_remove, grid)
 }
 
 pub fn part1(input: &Input) -> u64 {
-    input.0
+    input.0.len() as u64
 }
 
 pub fn part2(input: &Input) -> u64 {
-    input.1
+    let (mut to_remove, mut grid) = input.clone();
+
+    let mut removed = 0;
+    while let Some(pos) = to_remove.pop() {
+        removed += 1;
+
+        for next in SURROUNDING.iter().map(|&p| pos + p) {
+            if grid.contains(next) {
+                if grid[next] == 4 {
+                    to_remove.push(next);
+                }
+
+                grid[next] -= 1;
+            }
+        }
+    }
+    removed
 }
 
 #[cfg(test)]
