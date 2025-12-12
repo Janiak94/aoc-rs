@@ -13,41 +13,33 @@ pub mod day9;
 
 #[macro_export]
 macro_rules! aoc {
-    // Same preprocessing for each part.
-    ( $day:ident => $process:ident => $($part:ident),+ $(,)? ) => {{
-        let process = |raw: &str| {
-            let start = std::time::Instant::now();
-            let input = aoc_2025::$day::$process(raw);
-            let elapsed = start.elapsed();
-            println!("  preprocessing: elapsed: {:.3?}", elapsed);
-            input
-        };
-        aoc!(@run $day => process => $( $part ),+ );
+    ( $day:ident => $($part:ident),+ ) => {{
+        aoc!(@run $day @parts $( $part, )+);
     }};
 
-    // No preprocessing.
-    ( $day:ident => $($part:ident),+ $(,)? ) => {{
-        fn process(raw: &str) -> &str {
-            raw
-        }
-        aoc!(@run $day => process => $( $part ),+ );
+    ( $day:ident => $process:ident => $($part:ident),+ ) => {{
+        aoc!(@run $day @process $process @parts $( $part, )+);
     }};
 
-    // Helper macro.
-    ( @run $day:ident => $process:expr => $($part:ident),+ $(,)? ) => {{
+    ( @run $day:ident $( @process $process:ident )? @parts $($part:ident),+ $(,)?) => {{
         let start_day = std::time::Instant::now();
-        let raw = include_str!(concat!("../input/", stringify!($day), ".txt"));
+        let input = include_str!(concat!("../input/", stringify!($day), ".txt"));
 
         println!("Day {}: ", stringify!($day));
 
-        let input = $process(raw);
+        $(
+            let start = std::time::Instant::now();
+            let input = aoc_2025::$day::$process(input);
+            let elapsed = start.elapsed();
+            println!("  {:<15} {:<20}elapsed: {:.3?}", "preprocessing", "", elapsed);
+        )?
 
         $(
             let start = std::time::Instant::now();
             let result = aoc_2025::$day::$part(&input);
             let elapsed = start.elapsed();
 
-            println!("  {:<10} {:<20} elapsed: {:.3?}", stringify!($part), result, elapsed);
+            println!("  {:<15} {:<20}elapsed: {:.3?}", stringify!($part), result, elapsed);
         )+
         let elapsed = start_day.elapsed();
         println!("elapsed day: {:.3?}", elapsed);
