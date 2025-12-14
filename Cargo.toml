@@ -2,4 +2,7 @@
 
 resolver = "3"
 
-members = ["aoc-2025"]
+members = ["aoc-2019", "aoc-2025", "aoc-utils"]
+
+[workspace.dependencies]
+aoc-utils = { path = "aoc-utils" }
